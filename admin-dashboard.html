@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin | Boleto & Bocado</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* Variables y ajustes generales */
+        :root {
+            --naranja-barro: #e67e22;
+            --terracota: #d35400;
+            --verde-agave: #27ae60;
+            --texto-oscuro: #2c3e50;
+            --fondo-gris: #f4f4f9;
+        }
+        body { background-color: var(--fondo-gris); margin: 0; }
+
+        /* Estructura dividida: Menú lateral y Contenido */
+        .dashboard-layout {
+            display: flex;
+            width: 95%;
+            max-width: 1400px;
+            margin: 40px auto;
+            gap: 25px;
+            align-items: flex-start;
+        }
+
+        /* Pestañas laterales */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 25px 15px;
+            flex-shrink: 0;
+        }
+        .sidebar h3 {
+            text-align: center;
+            color: var(--terracota);
+            margin-top: 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
+        /* Botones principales más grandes */
+        .tab-btn {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 16px 20px;
+            font-size: 1.2rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+            color: var(--texto-oscuro);
+            cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        .tab-btn:hover { background-color: #f0f0f0; }
+        .tab-btn.active {
+            background-color: var(--terracota);
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Sub-menú (Sub-clasificaciones) */
+        .sub-menu {
+            display: none; /* Oculto por defecto */
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+        .sub-menu.open {
+            display: block; /* Se muestra al darle clic al padre */
+        }
+        .sub-tab-btn {
+            display: block;
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 1.05rem;
+            font-family: 'Montserrat', sans-serif;
+            color: var(--texto-oscuro);
+            cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            border-left: 4px solid transparent;
+            transition: all 0.2s;
+        }
+        .sub-tab-btn:hover { background-color: #e9ecef; }
+        .sub-tab-btn.active {
+            border-left: 4px solid var(--terracota);
+            background-color: #fff3e0;
+            font-weight: bold;
+            color: var(--terracota);
+        }
+
+        /* Área de la tabla */
+        .main-content { flex-grow: 1; min-width: 0; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .dashboard-header h2 { margin: 0; color: var(--texto-oscuro); }
+        .btn-menu { background-color: var(--verde-agave); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; border: none; cursor: pointer; font-size: 1.1rem;}
+        
+        .table-wrapper { background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 15px; border-bottom: 1px solid #eee; }
+        th { background-color: var(--texto-oscuro); color: white; font-family: 'Playfair Display', serif; font-size: 1.1rem; }
+        tr:hover { background-color: #f9f9f9; }
+        
+        input.edit-input { width: 80px; padding: 8px; border: 1px solid var(--naranja-barro); border-radius: 4px; font-family: 'Montserrat'; font-size: 1rem; }
+        .btn-edit { background: #3498db; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        .btn-save { background: var(--verde-agave); color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+
+        /* Modal (Ventana de fotos) */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; display: none; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 900px; max-height: 85vh; overflow-y: auto; position: relative; text-align: center; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.2rem; cursor: pointer; color: var(--texto-oscuro); font-weight: bold; background: #eee; padding: 5px 10px; border-radius: 5px; }
+        .close-btn:hover { background: var(--terracota); color: white; }
+        .gallery img { width: 100%; max-width: 800px; margin-bottom: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 3px solid var(--naranja-barro); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container" style="display: flex; justify-content: space-between; padding: 10px 40px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <a href="index.html" class="logo-link"><img src="boleto_bocado.jpeg" alt="Logo" class="logo-img" style="height:50px; border-radius: 50%;"></a>
+            <a href="index.html" class="btn-admin" style="text-decoration: none; color: white; background: #2c3e50; padding: 10px 20px; border-radius: 20px; font-weight: bold; display: flex; align-items: center;">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout">
+        
+        <!-- Pestañas Laterales con Sub-menús -->
+        <div class="sidebar">
+            <h3>Categorías</h3>
+            
+            <button class="tab-btn active" onclick="seleccionarFiltro('Todos', null, this)">
+                <span>🍽️ Todos</span>
+            </button>
+            
+            <!-- Comidas con sub-pestañas -->
+            <button class="tab-btn" onclick="desplegarMenu('menu-comidas', 'Comidas', this)">
+                <span>🥘 Comidas</span> <span>▾</span>
+            </button>
+            <div id="menu-comidas" class="sub-menu">
+                <button class="sub-tab-btn" onclick="seleccionarFiltro('Comidas', 'Primeras Salidas', this)">Primeras Salidas</button>
+                <button class="sub-tab-btn" onclick="seleccionarFiltro('Comidas', 'Rutas Directas', this)">Rutas Directas</button>
+                <button class="sub-tab-btn" onclick="seleccionarFiltro('Comidas', 'Escalas y Equipaje', this)">Escalas y Equipaje</button>
+                <button class="sub-tab-btn" onclick="seleccionarFiltro('Comidas', 'Para Llevar', this)">Para Llevar</button>
+            </div>
+
+            <button class="tab-btn" onclick="seleccionarFiltro('Postres', null, this)">
+                <span>🍮 Postres</span>
+            </button>
+            
+            <!-- Bebidas con sub-pestañas -->
+            <button class="tab-btn" onclick="desplegarMenu('menu-bebidas', 'Bebidas', this)">
+                <span>☕ Bebidas</span> <span>▾</span>
+            </button>
+            <div id="menu-bebidas" class="sub-menu">
+                <button class="sub-tab-btn" onclick="seleccionarFiltro('Bebidas', 'Bebidas Calientes', this)">Calientes</button>
+                <button class="sub-tab-btn" onclick="seleccionarFiltro('Bebidas', 'Bebidas Frías', this)">Frías</button>
+            </div>
+        </div>
+
+        <!-- Contenedor Principal (Tabla) -->
+        <div class="main-content">
+            <div class="dashboard-header">
+                <h2>Gestión de Precios</h2>
+                <button onclick="document.getElementById('modal-fotos').style.display='flex'" class="btn-menu">Ver Fotos del Menú 📸</button>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Categoría</th>
+                            <th>Platillo / Descripción</th>
+                            <th>Chico</th>
+                            <th>Mediano</th>
+                            <th>Grande</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="menu-table-body">
+                        <tr><td colspan="6" style="text-align: center; font-size: 1.2rem; padding: 30px;">Cargando base de datos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ventana emergente con las fotos -->
+    <div id="modal-fotos" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="document.getElementById('modal-fotos').style.display='none'">&times; Cerrar</span>
+            <h2 style="color: var(--terracota); margin-bottom: 20px;">Menú Original de Referencia</h2>
+            <div class="gallery">
+                <img src="2.png" alt="Menú 1 - Primeras Salidas">
+                <img src="3.png" alt="Menú 2 - Para Llevar">
+                <img src="1.png" alt="Menú 3 - Bebidas">
+            </div>
+        </div>
+    </div>
+
+<script>
+    let menuDB = [];
+    let filtroPrincipal = 'Todos';
+    let filtroSecundario = null; // Para las subcategorías
+
+    // Cargar datos de PostgreSQL
+    async function cargarDatos() {
+        try {
+            const respuesta = await fetch('http://localhost:3000/api/menu');
+            menuDB = await respuesta.json();
+            renderTable(); // Pinta todos por defecto
+        } catch (error) {
+            console.error('Error conectando a la BD:', error);
+            alert("Asegúrate de que tu servidor Node (server.js) esté corriendo.");
+        }
+    }
+
+    // Despliega el menú acordeón (ej: al darle clic a Comidas o Bebidas)
+    function desplegarMenu(menuId, categoria, boton) {
+        // Cerrar otros submenús abiertos
+        document.querySelectorAll('.sub-menu').forEach(menu => {
+            if(menu.id !== menuId) menu.classList.remove('open');
+        });
+        
+        // Abrir/Cerrar el menú seleccionado
+        const menuSeleccionado = document.getElementById(menuId);
+        menuSeleccionado.classList.toggle('open');
+        
+        // Seleccionamos la categoría global al mismo tiempo
+        seleccionarFiltro(categoria, null, boton, false);
+    }
+
+    // Selecciona el filtro y actualiza colores de los botones
+    function seleccionarFiltro(principal, secundario, boton, ocultarSubmenus = true) {
+        filtroPrincipal = principal;
+        filtroSecundario = secundario;
+
+        // Si es un botón principal sin submenú (Ej. Todos o Postres), cerramos los demás submenús
+        if (ocultarSubmenus && !secundario) {
+            document.querySelectorAll('.sub-menu').forEach(menu => menu.classList.remove('open'));
+        }
+
+        // Limpiar estilos "activos" de todos los botones
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+        // Agregar la clase activa al botón clickeado
+        boton.classList.add('active');
+        
+        // Si clickeamos una subpestaña, también mantenemos marcado su "Padre"
+        if (secundario) {
+            if (principal === 'Comidas') {
+                document.querySelector('[onclick*="desplegarMenu(\'menu-comidas\'"]').classList.add('active');
+            }
+            if (principal === 'Bebidas') {
+                document.querySelector('[onclick*="desplegarMenu(\'menu-bebidas\'"]').classList.add('active');
+            }
+        }
+
+        renderTable();
+    }
+
+    // Función para pintar la tabla dependiendo del filtro doble
+    function renderTable() {
+        const tbody = document.getElementById("menu-table-body");
+        tbody.innerHTML = "";
+        
+        const menuFiltrado = menuDB.filter(item => {
+            if (filtroPrincipal === 'Todos') return true;
+            
+            if (filtroPrincipal === 'Comidas') {
+                if (filtroSecundario) return item.categoria === filtroSecundario; // Filtro estricto
+                // Si solo eligió "Comidas", muestra todas estas categorías
+                return ['Primeras Salidas', 'Rutas Directas', 'Escalas y Equipaje', 'Para Llevar'].includes(item.categoria);
+            }
+            if (filtroPrincipal === 'Postres') {
+                return item.categoria === 'Postres';
+            }
+            if (filtroPrincipal === 'Bebidas') {
+                if (filtroSecundario) return item.categoria === filtroSecundario; // Filtro estricto
+                // Si solo eligió "Bebidas", muestra frías y calientes
+                return ['Bebidas Calientes', 'Bebidas Frías'].includes(item.categoria);
+            }
+            return true;
+        });
+
+        if (menuFiltrado.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px;">No hay platillos en esta categoría.</td></tr>`;
+            return;
+        }
+        
+        menuFiltrado.forEach(item => {
+            const pChico = item.precio_chico || '-';
+            const pMed = item.precio_mediano || '-';
+            const pGde = item.precio_grande || '-';
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><strong>${item.categoria}</strong></td>
+                <td>
+                    <strong>${item.nombre}</strong> <br> <small style="color: #666; font-size: 0.9rem;">${item.descripcion || ''}</small>
+                </td>
+                <td>
+                    <span id="c-${item.id_platillo}" style="color:var(--verde-agave); font-weight:bold; font-size: 1.1rem;">${pChico !== '-' ? '$'+pChico : '-'}</span>
+                    <input type="text" id="edit-c-${item.id_platillo}" class="edit-input" style="display:none;" value="${pChico}">
+                </td>
+                <td>
+                    <span id="m-${item.id_platillo}" style="color:var(--verde-agave); font-weight:bold; font-size: 1.1rem;">${pMed !== '-' ? '$'+pMed : '-'}</span>
+                    <input type="text" id="edit-m-${item.id_platillo}" class="edit-input" style="display:none;" value="${pMed}">
+                </td>
+                <td>
+                    <span id="g-${item.id_platillo}" style="color:var(--verde-agave); font-weight:bold; font-size: 1.1rem;">${pGde !== '-' ? '$'+pGde : '-'}</span>
+                    <input type="text" id="edit-g-${item.id_platillo}" class="edit-input" style="display:none;" value="${pGde}">
+                </td>
+                <td>
+                    <button class="btn-edit" id="btn-edit-${item.id_platillo}" onclick="editItem(${item.id_platillo})">✏️ Editar</button>
+                    <button class="btn-save" id="btn-save-${item.id_platillo}" style="display:none;" onclick="saveItem(${item.id_platillo})">💾 Guardar</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function editItem(id) {
+        document.getElementById(`c-${id}`).style.display = 'none';
+        document.getElementById(`m-${id}`).style.display = 'none';
+        document.getElementById(`g-${id}`).style.display = 'none';
+        document.getElementById(`btn-edit-${id}`).style.display = 'none';
+
+        document.getElementById(`edit-c-${id}`).style.display = 'block';
+        document.getElementById(`edit-m-${id}`).style.display = 'block';
+        document.getElementById(`edit-g-${id}`).style.display = 'block';
+        document.getElementById(`btn-save-${id}`).style.display = 'inline-block';
+    }
+
+    async function saveItem(id) {
+        const precioChico = document.getElementById(`edit-c-${id}`).value.replace('$', '');
+        const precioMediano = document.getElementById(`edit-m-${id}`).value.replace('$', '');
+        const precioGrande = document.getElementById(`edit-g-${id}`).value.replace('$', '');
+        
+        try {
+            await fetch(`http://localhost:3000/api/menu/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    precio_chico: precioChico === '-' ? null : precioChico,
+                    precio_mediano: precioMediano === '-' ? null : precioMediano,
+                    precio_grande: precioGrande === '-' ? null : precioGrande
+                })
+            });
+            
+            cargarDatos();
+        } catch (error) {
+            console.error('Error al guardar:', error);
+            alert("Hubo un error al guardar. Revisa que el servidor Node esté activo.");
+        }
+    }
+
+    window.onload = cargarDatos;
+</script>
+</body>
+</html>

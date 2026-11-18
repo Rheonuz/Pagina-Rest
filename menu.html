@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú | Boleto & Bocado</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        .menu-header { text-align: center; margin: 40px 0; }
+        .menu-header h1 { font-size: 3.5rem; color: var(--terracota); }
+        .menu-container { width: 90%; max-width: 1200px; margin: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; margin-bottom: 60px; }
+        
+        .category-card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-top: 6px solid var(--naranja-barro); }
+        .category-title { color: var(--terracota); font-size: 1.8rem; border-bottom: 2px dashed #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        .menu-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .item-info { width: 50%; }
+        .item-name { font-weight: bold; color: var(--texto-oscuro); display: block; font-size: 1.1rem; }
+        .item-desc { font-size: 0.85rem; color: #7f8c8d; }
+        
+        .item-prices { display: flex; gap: 15px; font-weight: bold; color: var(--verde-agave); font-size: 0.95rem; }
+        .price-col { text-align: center; }
+        .price-label { display: block; font-size: 0.7rem; color: #95a5a6; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo-link"><img src="image_983342.png" alt="Logo" class="logo-img" style="height:50px;"></a>
+            <a href="index.html" class="btn-admin">← Volver al Inicio</a>
+        </div>
+    </nav>
+
+    <div class="menu-header">
+        <h1>Nuestro Menú</h1>
+        <div class="divider-center"></div>
+    </div>
+
+    <div class="menu-container" id="menu-publico">
+        <!-- El menú se generará aquí automáticamente -->
+    </div>
+
+    <script>
+        // Lee la base de datos simulada
+        let db = JSON.parse(localStorage.getItem("menuDB"));
+
+        if(db) {
+            const contenedorMenu = document.getElementById("menu-publico");
+            
+            // Agrupar los platillos por categoría
+            const categorias = [...new Set(db.map(item => item.categoria))];
+
+            categorias.forEach(cat => {
+                let htmlCard = `<div class="category-card"><h2 class="category-title">${cat}</h2>`;
+                
+                const platillos = db.filter(item => item.categoria === cat);
+                platillos.forEach(p => {
+                    htmlCard += `
+                        <div class="menu-item">
+                            <div class="item-info">
+                                <span class="item-name">${p.nombre}</span>
+                                <span class="item-desc">${p.desc}</span>
+                            </div>
+                            <div class="item-prices">
+                                <div class="price-col"><span class="price-label">Chico</span>$${p.chico}</div>
+                                <div class="price-col"><span class="price-label">Mediano</span>$${p.mediano}</div>
+                                <div class="price-col"><span class="price-label">Grande</span>$${p.grande}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                htmlCard += `</div>`;
+                contenedorMenu.innerHTML += htmlCard;
+            });
+        }
+    </script>
+</body>
+</html>
