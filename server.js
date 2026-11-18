@@ -8,11 +8,10 @@ app.use(express.json()); // Permite recibir datos en formato JSON
 
 // Configuración de conexión a PostgreSQL
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'boleto_bocado',
-    password: 'MxRon4ldoxM', // CÁMBIA ESTO POR TU CONTRASEÑA
-    port: 2109,
+    connectionString: 'postgresql://neondb_owner:npg_BWDb6nFjVw0p@ep-spring-frog-bcr4qeyy-pooler.c-16.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 // Endpoint para obtener todo el menú (Lo usará menu.html)
@@ -99,7 +98,8 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Iniciar servidor
-app.listen(3000, () => {
-    console.log("Servidor corriendo en http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
+
 });
