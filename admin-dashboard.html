@@ -218,7 +218,7 @@
     // Cargar datos de PostgreSQL
     async function cargarDatos() {
         try {
-            const respuesta = await fetch('http://localhost:3000/api/menu');
+            const respuesta = await fetch('https://boleto-bocado-api.onrender.com/api/menu');
             menuDB = await respuesta.json();
             renderTable(); // Pinta todos por defecto
         } catch (error) {
@@ -351,7 +351,7 @@
         const precioGrande = document.getElementById(`edit-g-${id}`).value.replace('$', '');
         
         try {
-            await fetch(`http://localhost:3000/api/menu/${id}`, {
+            await fetch(`https://boleto-bocado-api.onrender.com/api/menu/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
